@@ -1,0 +1,187 @@
+openapi: 3.0.3
+info:
+  title: API PARTIDOS
+  version: 1.0.0
+  description: API de consulta de equipos y partidos del torneo.
+servers:
+  - url: /
+paths:
+  /:
+    get:
+      summary: Mensaje de bienvenida
+      responses:
+        '200':
+          description: Texto de bienvenida.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: Hola mundo
+  /api/equipos:
+    get:
+      summary: Obtener todos los equipos
+      responses:
+        '200':
+          description: Lista de equipos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Equipo'
+  /api/partidos:
+    get:
+      summary: Obtener todos los partidos
+      responses:
+        '200':
+          description: Lista de partidos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Partido'
+  /api/partidos/pendientes:
+    get:
+      summary: Obtener partidos pendientes
+      responses:
+        '200':
+          description: Partidos cuyo indicador jugado es false.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Partido'
+  /api/partidos/disputados:
+    get:
+      summary: Obtener el resumen de cada partido
+      responses:
+        '200':
+          description: Lista con los equipos, los goles y el equipo ganador calculado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartidoDisputado'
+  /api/partidos/resumenEstatico:
+    get:
+      summary: Obtener el resumen del torneo
+      responses:
+        '200':
+          description: Totales calculados a partir de los equipos y partidos cargados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumenEstatico'
+  /api/info:
+    get:
+      summary: Obtener información de la aplicación
+      responses:
+        '200':
+          description: Metadatos de la aplicación y versión de Node.js en ejecución.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Info'
+components:
+  schemas:
+    Equipo:
+      type: object
+      required:
+        - id
+        - nombre
+        - grupo
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        grupo:
+          type: string
+    Partido:
+      type: object
+      required:
+        - id
+        - equipoLocal
+        - equipoVisitante
+        - fecha
+        - jugado
+        - golesLocal
+        - golesVisitante
+      properties:
+        id:
+          type: integer
+        equipoLocal:
+          type: integer
+          description: ID del equipo local.
+        equipoVisitante:
+          type: integer
+          description: ID del equipo visitante.
+        fecha:
+          type: string
+          example: '2026-09-05'
+        jugado:
+          type: boolean
+        golesLocal:
+          type: integer
+        golesVisitante:
+          type: integer
+    PartidoDisputado:
+      type: object
+      required:
+        - local
+        - visitante
+        - golesLocales
+        - golesVisitante
+        - equipoGanador
+      properties:
+        local:
+          type: string
+        visitante:
+          type: string
+        golesLocales:
+          type: integer
+        golesVisitante:
+          type: integer
+        equipoGanador:
+          type: string
+    ResumenEstatico:
+      type: object
+      required:
+        - nombreTorneo
+        - totalEquipos
+        - totalPartidos
+        - partidosJugados
+        - partidosPendientes
+        - totalGoles
+      properties:
+        nombreTorneo:
+          type: string
+        totalEquipos:
+          type: integer
+        totalPartidos:
+          type: integer
+        partidosJugados:
+          type: integer
+        partidosPendientes:
+          type: integer
+        totalGoles:
+          type: integer
+    Info:
+      type: object
+      required:
+        - aplicacion
+        - version
+        - tecnologia
+        - node
+      properties:
+        aplicacion:
+          type: string
+        version:
+          type: string
+        tecnologia:
+          type: string
+        node:
+          type: string
