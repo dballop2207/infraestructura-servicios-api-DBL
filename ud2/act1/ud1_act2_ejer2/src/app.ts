@@ -5,12 +5,6 @@ const app = express();
 
 const PORT = 3000;
 
-app.use(express.static("public"));
-
-app.get("/", (_req, res) => {
-  res.redirect("/index.html");
-});
-
 app.get("/", (req, res) => {
     res.send("Hola mundo");
 });
