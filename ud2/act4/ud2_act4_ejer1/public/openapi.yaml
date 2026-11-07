@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  title: API de tareas
+  version: 1.0.0
+  description: |
+    Actividad 2_4_1 · API Express para consultar y gestionar tareas.
+
+tags:
+  - name: Tareas
+    description: Operaciones sobre las tareas
+
+paths:
+  /api/tareas:
+    get:
+      tags: [Tareas]
+      summary: Consultar todas las tareas
+      responses:
+        '200':
+          description: Lista de tareas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tarea'
+
+    post:
+      tags: [Tareas]
+      summary: Crear una nueva tarea
+      description: Las tareas nuevas comienzan con completada a false.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuevaTarea'
+      responses:
+        '201':
+          description: Tarea creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+        '403':
+          $ref: '#/components/responses/SoloLectura'
+
+  /api/tareas/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdTarea'
+
+    get:
+      tags: [Tareas]
+      summary: Consultar una tarea por su id
+      responses:
+        '200':
+          description: Tarea encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+        '404':
+          $ref: '#/components/responses/NoEncontrada'
+
+    patch:
+      tags: [Tareas]
+      summary: Marcar una tarea como completada
+      responses:
+        '200':
+          description: Tarea marcada como completada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+        '403':
+          $ref: '#/components/responses/SoloLectura'
+        '404':
+          $ref: '#/components/responses/NoEncontrada'
+
+components:
+  schemas:
+    Tarea:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+        titulo:
+          type: string
+          example: Programacion
+        completada:
+          type: boolean
+          example: false
+
+    NuevaTarea:
+      type: object
+      required: [titulo]
+      properties:
+        titulo:
+          type: string
+          example: Programacion
+
+    Mensaje:
+      type: object
+      properties:
+        mensaje:
+          type: string
+
+  parameters:
+    IdTarea:
+      name: id
+      in: path
+      required: true
+      description: Identificador de la tarea
+      schema:
+        type: number
+        example: 1
+
+  responses:
+    NoEncontrada:
+      description: Tarea no encontrada
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Mensaje'
+          example:
+            mensaje: Tarea no encontrada
+
+    SoloLectura:
+      description: API en modo solo lectura
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Mensaje'
+          example:
+            mensaje: API en modo solo lectura
