@@ -1,0 +1,220 @@
+openapi: 3.0.3
+info:
+  title: API de tareas
+  version: 1.0.0
+  description: >
+    Documentación de API Express. Las entradas se describen sin reglas de
+    validación de negocio para permitir pruebas de errores gestionados por
+    Express (salvo limitaciones propias de Swagger UI, como JSON mal formado
+    o parámetros path vacíos).
+
+servers:
+  - url: /
+
+paths:
+  /api/tareas:
+    get:
+      summary: Listar tareas
+      description: >
+        Sin `ultimas`, devuelve las tareas en orden de creación. Con `ultimas`,
+        devuelve como máximo esa cantidad de tareas, en orden descendente de
+        identificador. La API espera un entero de 1 a 20; la validación de
+        `ultimas` se realiza en Express.
+      parameters:
+        - name: ultimas
+          in: query
+          required: false
+          description: >
+            Valor recibido por Express. La API debe comprobar si es un entero
+            entre 1 y 20. La documentación no aplica restricciones de valor.
+          schema:
+            type: string
+          example: "5"
+      responses:
+        "200":
+          description: Lista de tareas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tarea"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    post:
+      summary: Crear una tarea
+      description: >
+        Crea una tarea con `completada: false`. La API exige un `titulo` de
+        3 a 80 caracteres (sin espacios exteriores), no admite propiedades
+        adicionales y no permite títulos repetidos (sin distinguir
+        mayúsculas y minúsculas). Bloqueado si `SOLO_LECTURA=si`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                titulo:
+                  type: string
+                  example: Preparar la reunión
+            examples:
+              valida:
+                summary: Tarea válida
+                value:
+                  titulo: Preparar la reunión
+              tituloVacio:
+                summary: Título vacío (400)
+                value:
+                  titulo: ""
+              propiedadExtra:
+                summary: Propiedad inesperada (400)
+                value:
+                  titulo: Revisar correos
+                  completada: true
+      responses:
+        "201":
+          description: Tarea creada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tarea"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Ya existe una tarea con ese título
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  mensaje: Ya existe una tarea con ese título
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/tareas/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: >
+          Valor recibido por Express. La API debe comprobar si es un entero
+          positivo. La documentación no aplica restricciones de valor.
+        schema:
+          type: string
+        example: "1"
+
+    get:
+      summary: Obtener una tarea
+      responses:
+        "200":
+          description: Tarea encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tarea"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    patch:
+      summary: Marcar una tarea como completada
+      description: Bloqueado si `SOLO_LECTURA=si`.
+      responses:
+        "200":
+          description: Tarea completada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tarea"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  schemas:
+    Tarea:
+      type: object
+      required: [id, titulo, completada]
+      properties:
+        id:
+          type: integer
+          example: 1
+        titulo:
+          type: string
+          example: Programacion
+        completada:
+          type: boolean
+          example: false
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [mensaje]
+          properties:
+            mensaje:
+              type: string
+              example: Tarea no encontrada
+            detalles:
+              description: Problemas detectados por Zod (solo en errores de validación)
+              type: array
+              items:
+                type: object
+
+  responses:
+    BadRequest:
+      description: Datos incorrectos o JSON mal formado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              mensaje: Datos incorrectos
+              detalles:
+                - path: [titulo]
+                  message: "Too small: expected string to have >=3 characters"
+    Forbidden:
+      description: La API está en modo de solo lectura
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              mensaje: La API está en modo lectura
+    NotFound:
+      description: Tarea no encontrada
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              mensaje: Tarea no encontrada
+    InternalError:
+      description: Error inesperado del servidor
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              mensaje: Error interno del servidor
