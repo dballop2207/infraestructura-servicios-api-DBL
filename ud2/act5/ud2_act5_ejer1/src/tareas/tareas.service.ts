@@ -1,4 +1,4 @@
-import type { nuevaTarea, Tarea } from "./tarea.js";   // quitado cambiosTarea (no se usa)
+import type { nuevaTarea, Tarea } from "./tarea.js";
 import { AppError } from "../shared/app-error.js";
 
 const tareas: Tarea[] = [
@@ -13,18 +13,16 @@ export function listarTareas(ultimas?: number) {
         return tareas;
     }
 
-    const copiaArray = [...tareas];
-
-    copiaArray.sort((a, b) => b.id - a.id);
+    const tareasOrdenadas = tareas.toSorted((a,b) => b.id - a.id)
     
-    return copiaArray.slice(0, ultimas);
+    return tareasOrdenadas.slice(0, ultimas);
 }
 
 export function buscarTarea(id: number) {
-    const tarea = tareas.find(tarea => tarea.id === id);   // == → ===
+    const tarea = tareas.find(tarea => tarea.id === id);
 
     if (tarea === undefined) {
-        throw new AppError(404, 'Tarea no encontrada');   // corregida la falta
+        throw new AppError(404, 'Tarea no encontrada');
     }
 
     return tarea;
@@ -36,7 +34,7 @@ export function crearTarea(datos: nuevaTarea): Tarea {
     );
 
     if (duplicado) {
-        throw new AppError(409, 'Ya existe una tarea con ese título');   // corregida la falta
+        throw new AppError(409, 'Ya existe una tarea con ese título'); 
     }
 
     const nuevaTarea: Tarea = {

@@ -1,27 +1,27 @@
 import express from 'express';
 import cors from 'cors';
 
-import { existsSync } from "fs";
 import { tareasRouter } from "./tareas/tareas.routes.js";
 
-import { logger } from './middleware/registrarPeticiones.js';
-import { modoLectura } from './middleware/modoSoloLectura.js';
-
-if (existsSync('.env')) {
-    process.loadEnvFile('.env')
-}
+import { errorHandler } from './middleware/error-handler.js';
 
 const app = express();
 const PORT = 3000;
 
 // Middleware
-app.use('/api', logger);
-app.use('/api', modoLectura);
 app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 app.use(express.static('public'));
 app.use('/api/tareas', tareasRouter);
 app.get("/", (_req, res) => res.redirect("/index.html"));
+
+// Después de las rutas.
+app.use((_req, res) => {
+    res.status(404).json({
+        error: { mensaje: 'Endpoint no encontrado' }
+    });
+});
+app.use(errorHandler);
 
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Servidor iniciado en http://localhost:${PORT}`);

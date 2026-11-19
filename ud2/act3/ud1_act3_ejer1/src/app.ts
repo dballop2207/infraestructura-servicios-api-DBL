@@ -2,12 +2,14 @@ import express from "express";
 import { crearPresupuesto, listarPresupuesto, eliminarPresupuesto, actualizarPresupuesto, buscarPresupuesto, esMaterialValido, modificar, resumen } from "./services/presupuestos.service.js";
 import { presupuestos } from "./data/datos.js";
 import { DatosParaPresupuesto, CambiosPresupuesto } from "./models/presupuesto.js";
+import cors from "cors"
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.static("public"))
 app.use(express.json());
+app.use(cors());
 
 app.get("/", (_req, res) => {
     res.redirect("/index.html");
